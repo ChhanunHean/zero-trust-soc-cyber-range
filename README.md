@@ -113,7 +113,21 @@ In modern enterprise and financial computing, flat networks and simple perimeter
 
 ---
 
-## 5. Empirical Verification & Attack Testing
+## 5. Implementation & VM Hosting Guides
+
+Detailed step-by-step documentation for deploying, configuring, and verifying each tier in this cyber range:
+
+| Guide | Target Node & Subnet | Key Technologies & Topics Covered |
+| :--- | :--- | :--- |
+| **[01. Database VM Hosting Guide](file:///Users/chhanun/Projects/zero-trust-soc-cyber-range/docs/01_Database_VM_Hosting_Guide.md)** | `192.168.20.20` (`vtnet3`) | PostgreSQL 16, Redis 7, SCRAM-SHA-256, UFW host rules, schema initialization |
+| **[02. Web VM Hosting Guide](file:///Users/chhanun/Projects/zero-trust-soc-cyber-range/docs/02_Web_VM_Hosting_Guide.md)** | `192.168.10.10` (`vtnet2`) | Node.js 20, Next.js frontend (:3000), Express API (:4000), PM2, Prisma migrations |
+| **[03. Nginx Reverse Proxy Guide](file:///Users/chhanun/Projects/zero-trust-soc-cyber-range/docs/03_Nginx_Reverse_Proxy_Guide.md)** | `192.168.10.10` (`vtnet2`) | Internal reverse proxy (:8080 & :8081), header forwarding, SIEM access logging |
+| **[04. SafeLine WAF DMZ Guide](file:///Users/chhanun/Projects/zero-trust-soc-cyber-range/docs/04_SafeLine_WAF_DMZ_Hosting_Guide.md)** | `192.168.40.10` (`vtnet5`) | Docker deployment, Semantic AST analysis engine, Cloudflare Tunnel, blacklist rules |
+| **[05. Lab Defense-in-Depth Architecture](file:///Users/chhanun/Projects/zero-trust-soc-cyber-range/docs/05_Secure_Banking_Lab_Architecture.md)** | Full Multi-Tier Matrix | OPNsense ACLs, Wazuh SIEM telemetry, Suricata IDS/IPS, automated IP ban active response |
+
+---
+
+## 6. Empirical Verification & Attack Testing
 
 Defenses were rigorously validated by simulating real-world adversary behaviors:
 
