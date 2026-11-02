@@ -10,7 +10,7 @@
 
 ---
 
-## 📌 1. Project Overview & Motivation
+## 1. Project Overview & Motivation
 
 In modern enterprise and financial computing, flat networks and simple perimeter firewalls are obsolete. Once an attacker breaches an external boundary, unrestricted lateral movement allows immediate compromise of internal databases and identity providers.
 
@@ -23,7 +23,7 @@ In modern enterprise and financial computing, flat networks and simple perimeter
 
 ---
 
-## 🏛️ 2. High-Level Architecture Diagram
+## ️2. High-Level Architecture Diagram
 
 ```
                                 [ Public Internet / External Adversaries ]
@@ -70,7 +70,7 @@ In modern enterprise and financial computing, flat networks and simple perimeter
 
 ---
 
-## 🌐 3. Subnet & Network Allocation Matrix
+## 3. Subnet & Network Allocation Matrix
 
 | Interface | Subnet CIDR | Zone / Tier | Primary Role & Description |
 | :--- | :--- | :--- | :--- |
@@ -84,7 +84,7 @@ In modern enterprise and financial computing, flat networks and simple perimeter
 
 ---
 
-## 🔒 4. Core Defensive Components
+## 4. Core Defensive Components
 
 ### 1. Edge Layer: Cloudflare Zero-Trust Tunnel
 * **Origin Concealment:** Instead of traditional port forwarding on a physical home/campus router, an outbound-only daemon (`cloudflared`) connects to Cloudflare's global network edge.
@@ -113,7 +113,7 @@ In modern enterprise and financial computing, flat networks and simple perimeter
 
 ---
 
-## 🧪 5. Empirical Verification & Attack Testing
+## 5. Empirical Verification & Attack Testing
 
 Defenses were rigorously validated by simulating real-world adversary behaviors:
 
