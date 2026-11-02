@@ -141,7 +141,7 @@ Audited using custom Python penetration testing tool **`SILKWEB (web_scan.py)`**
 
 ---
 
-##️ 6. Technology Stack & Tools
+## 6. Technology Stack & Tools
 
 * **Hypervisor:** QEMU / UTM (Apple Silicon ARM64 & x86_64 virtualization)
 * **Operating Systems:** Ubuntu Server 22.04 LTS, Ubuntu Desktop 26.04, FreeBSD (OPNsense)
