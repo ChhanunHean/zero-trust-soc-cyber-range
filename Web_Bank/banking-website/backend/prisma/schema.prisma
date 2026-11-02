@@ -1,0 +1,290 @@
+// Prisma schema for the Banking Website
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum AccountType {
+  SAVINGS
+  CHECKING
+  CREDIT
+  LOAN
+  INVESTMENT
+}
+
+enum AccountStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+enum TxnType {
+  DEBIT
+  CREDIT
+}
+
+enum TxnStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+enum TransferType {
+  INTERNAL
+  DOMESTIC
+  INTERNATIONAL
+}
+
+enum TransferStatus {
+  PENDING
+  SCHEDULED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ApplicationType {
+  ACCOUNT
+  LOAN
+  CREDIT_CARD
+  BUSINESS_ACCOUNT
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  INFO
+  SECURITY
+  TRANSACTION
+  REMINDER
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  username      String        @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  phone         String?
+  role          Role          @default(CUSTOMER)
+  status        UserStatus    @default(ACTIVE)
+  mfaEnabled    Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  accounts      Account[]
+  beneficiaries Beneficiary[]
+  billers       Biller[]
+  notifications Notification[]
+  applications  Application[]
+  sessions      Session[]
+  auditLogs     AuditLog[]
+}
+
+model Session {
+  id               String   @id @default(cuid())
+  userId           String
+  refreshTokenHash String
+  userAgent        String?
+  ip               String?
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id               String        @id @default(cuid())
+  userId           String
+  accountNumber    String        @unique
+  type             AccountType
+  name             String
+  balance          Decimal       @default(0) @db.Decimal(18, 2)
+  availableBalance Decimal       @default(0) @db.Decimal(18, 2)
+  currency         String        @default("USD")
+  status           AccountStatus @default(ACTIVE)
+  interestRate     Decimal       @default(0) @db.Decimal(5, 2)
+  branch           String?
+  openedAt         DateTime      @default(now())
+
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions     Transaction[]
+  outgoingTransfers Transfer[]   @relation("FromAccount")
+  incomingTransfers Transfer[]   @relation("ToAccount")
+  billPayments     BillPayment[]
+
+  @@index([userId])
+}
+
+model Transaction {
+  id           String    @id @default(cuid())
+  accountId    String
+  type         TxnType
+  category     String    @default("Other")
+  amount       Decimal   @db.Decimal(18, 2)
+  balanceAfter Decimal   @db.Decimal(18, 2)
+  description  String
+  merchant     String?
+  reference    String    @unique
+  status       TxnStatus @default(COMPLETED)
+  createdAt    DateTime  @default(now())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([createdAt])
+}
+
+model Transfer {
+  id            String         @id @default(cuid())
+  fromAccountId String
+  toAccountId   String?
+  beneficiaryId String?
+  type          TransferType
+  amount        Decimal        @db.Decimal(18, 2)
+  currency      String         @default("USD")
+  fee           Decimal        @default(0) @db.Decimal(18, 2)
+  status        TransferStatus @default(COMPLETED)
+  note          String?
+  reference     String         @unique
+  scheduledAt   DateTime?
+  recurring     Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+
+  fromAccount Account      @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
+  toAccount   Account?     @relation("ToAccount", fields: [toAccountId], references: [id])
+  beneficiary Beneficiary? @relation(fields: [beneficiaryId], references: [id])
+
+  @@index([fromAccountId])
+}
+
+model Beneficiary {
+  id            String       @id @default(cuid())
+  userId        String
+  name          String
+  nickname      String?
+  bankName      String
+  accountNumber String
+  routingNumber String?
+  iban          String?
+  swift         String?
+  type          TransferType @default(DOMESTIC)
+  createdAt     DateTime     @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transfers Transfer[]
+
+  @@index([userId])
+}
+
+model Biller {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  category      String
+  accountNumber String
+  nickname      String?
+  createdAt     DateTime @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  billPayments BillPayment[]
+
+  @@index([userId])
+}
+
+model BillPayment {
+  id          String    @id @default(cuid())
+  billerId    String
+  accountId   String
+  amount      Decimal   @db.Decimal(18, 2)
+  status      TxnStatus @default(COMPLETED)
+  reference   String    @unique
+  scheduledAt DateTime?
+  recurring   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  biller  Biller  @relation(fields: [billerId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([billerId])
+  @@index([accountId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType @default(INFO)
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Application {
+  id              String            @id @default(cuid())
+  userId          String?
+  type            ApplicationType
+  status          ApplicationStatus @default(SUBMITTED)
+  referenceNumber String            @unique
+  data            Json
+  createdAt       DateTime          @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String?
+  entityId  String?
+  ip        String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+}
